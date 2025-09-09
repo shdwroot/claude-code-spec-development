@@ -1,0 +1,376 @@
+# Agent Configuration for Spec-Driven Development
+
+# Global Agent Settings
+global_settings:
+  max_context_tokens: 128000
+  response_timeout: 300  # 5 minutes
+  retry_attempts: 3
+  temperature: 0.2  # Lower temperature for more consistent outputs
+  top_p: 0.9
+  presence_penalty: 0.1
+  frequency_penalty: 0.1
+
+# Model Selection Strategy
+model_configuration:
+  primary_model: "claude-3-5-sonnet-20241022"
+  fallback_model: "claude-3-haiku-20240307"
+  
+  # Model assignment by agent type
+  agent_models:
+    orchestrator: "claude-3-5-sonnet-20241022"
+    requirements: "claude-3-5-sonnet-20241022" 
+    design: "claude-3-5-sonnet-20241022"
+    tasks: "claude-3-5-sonnet-20241022"
+    implementation: "claude-3-5-sonnet-20241022"
+    review: "claude-3-haiku-20240307"
+    validation: "claude-3-haiku-20240307"
+
+# Agent-Specific Configurations
+
+orchestrator:
+  role: "workflow_coordinator"
+  specialization: "multi-agent_orchestration"
+  
+  behavior_settings:
+    approval_required: true
+    human_in_the_loop: true
+    context_preservation: true
+    decision_logging: true
+  
+  prompt_engineering:
+    system_persona: "experienced_technical_project_manager"
+    communication_style: "professional_decisive"
+    decision_approach: "evidence_based"
+    escalation_threshold: "medium"
+  
+  quality_controls:
+    validate_phase_outputs: true
+    check_requirements_coverage: true
+    enforce_approval_gates: true
+    maintain_traceability: true
+  
+  mcp_integrations:
+    primary: "continuity"
+    secondary: ["filesystem", "git"]
+    context_storage: true
+    pattern_analysis: true
+
+requirements:
+  role: "business_analyst"
+  specialization: "requirements_engineering"
+  
+  behavior_settings:
+    ears_syntax_required: true
+    user_story_format_required: true
+    validation_strictness: "high"
+    edge_case_analysis: true
+  
+  prompt_engineering:
+    system_persona: "senior_business_analyst"
+    communication_style: "structured_analytical"
+    detail_level: "comprehensive"
+    stakeholder_focus: true
+  
+  quality_controls:
+    ears_syntax_validation: true
+    completeness_checking: true
+    consistency_validation: true
+    traceability_enforcement: true
+  
+  template_usage:
+    required_template: ".claude/templates/requirements.md"
+    variable_substitution: true
+    format_validation: true
+  
+  mcp_integrations:
+    primary: "continuity"
+    pattern_retrieval: true
+    similar_requirements_analysis: true
+    historical_learning: true
+
+design:
+  role: "software_architect"
+  specialization: "technical_architecture"
+  
+  behavior_settings:
+    architecture_diagrams_required: true
+    api_specification_required: true
+    security_analysis_required: true
+    performance_considerations_required: true
+  
+  prompt_engineering:
+    system_persona: "principal_software_architect"
+    communication_style: "technical_detailed"
+    diagram_generation: "mermaid_js"
+    code_examples: "typescript_preferred"
+  
+  quality_controls:
+    requirements_coverage_check: true
+    architecture_consistency_check: true
+    security_review_required: true
+    performance_impact_analysis: true
+  
+  template_usage:
+    required_template: ".claude/templates/design.md"
+    diagram_generation: true
+    code_snippet_inclusion: true
+  
+  mcp_integrations:
+    primary: "continuity"
+    secondary: ["filesystem"]
+    architecture_pattern_analysis: true
+    codebase_analysis: true
+    design_history_tracking: true
+
+tasks:
+  role: "project_manager"
+  specialization: "implementation_planning"
+  
+  behavior_settings:
+    atomic_task_generation: true
+    dependency_mapping_required: true
+    effort_estimation_required: true
+    risk_assessment_required: true
+  
+  prompt_engineering:
+    system_persona: "experienced_technical_project_manager"
+    communication_style: "organized_actionable"
+    task_granularity: "4_to_8_hours"
+    dependency_analysis_depth: "comprehensive"
+  
+  quality_controls:
+    task_traceability_check: true
+    completion_criteria_validation: true
+    dependency_logic_check: true
+    resource_requirement_analysis: true
+  
+  template_usage:
+    required_template: ".claude/templates/tasks.md"
+    checklist_format: true
+    effort_estimation: true
+    dependency_visualization: true
+  
+  mcp_integrations:
+    primary: "continuity"
+    historical_estimation_analysis: true
+    successful_task_pattern_analysis: true
+    team_velocity_insights: true
+
+implementation:
+  role: "senior_developer"
+  specialization: "code_generation"
+  
+  behavior_settings:
+    code_quality_standards: "high"
+    testing_required: true
+    security_scanning: true
+    performance_optimization: true
+  
+  prompt_engineering:
+    system_persona: "senior_full_stack_developer"
+    communication_style: "code_focused_practical"
+    code_style: "clean_maintainable"
+    documentation_level: "moderate"
+  
+  quality_controls:
+    code_review_simulation: true
+    test_coverage_validation: true
+    security_vulnerability_check: true
+    performance_impact_assessment: true
+  
+  mcp_integrations:
+    primary: "filesystem"
+    secondary: ["git", "continuity"]
+    code_pattern_analysis: true
+    existing_codebase_integration: true
+    implementation_history_learning: true
+
+# Workflow Orchestration Settings
+
+workflow_management:
+  phase_transition_approval: true
+  context_preservation_between_phases: true
+  error_recovery_enabled: true
+  parallel_execution_support: true
+  
+  approval_gates:
+    requirements_approval:
+      required: true
+      timeout: 86400  # 24 hours
+      approvers: ["product_owner", "technical_lead"]
+      
+    design_approval:
+      required: true
+      timeout: 172800  # 48 hours
+      approvers: ["technical_lead", "security_reviewer"]
+      
+    tasks_approval:
+      required: true
+      timeout: 43200   # 12 hours
+      approvers: ["project_manager", "technical_lead"]
+
+# Context Management
+
+context_management:
+  steering_files_always_loaded: true
+  previous_phase_context_included: true
+  similar_feature_context_retrieval: true
+  decision_history_preservation: true
+  
+  context_sources:
+    - source: "steering_files"
+      priority: "high"
+      always_include: true
+    - source: "previous_phases"
+      priority: "high"
+      conditional_include: true
+    - source: "similar_features"
+      priority: "medium"
+      mcp_retrieval: true
+    - source: "project_patterns"
+      priority: "medium"
+      historical_analysis: true
+
+# Quality Assurance
+
+quality_assurance:
+  validation_enabled: true
+  format_checking: true
+  completeness_scoring: true
+  consistency_analysis: true
+  
+  validation_rules:
+    requirements:
+      - ears_syntax_compliance
+      - user_story_format_compliance
+      - acceptance_criteria_completeness
+      - traceability_links_present
+    
+    design:
+      - requirements_coverage_complete
+      - architecture_diagrams_present
+      - api_specifications_complete
+      - security_considerations_addressed
+    
+    tasks:
+      - task_requirement_traceability
+      - completion_criteria_defined
+      - effort_estimates_present
+      - dependencies_mapped
+
+# Error Handling and Recovery
+
+error_handling:
+  retry_on_validation_failure: true
+  max_retry_attempts: 3
+  escalation_on_persistent_failure: true
+  partial_progress_preservation: true
+  
+  recovery_strategies:
+    context_loss:
+      action: "reload_from_mcp"
+      fallback: "request_context_from_user"
+    
+    validation_failure:
+      action: "iterative_improvement"
+      max_iterations: 3
+      
+    timeout:
+      action: "save_partial_progress"
+      notify_user: true
+      
+    approval_rejection:
+      action: "capture_feedback_and_iterate"
+      preserve_approved_sections: true
+
+# Performance Optimization
+
+performance_settings:
+  parallel_agent_execution: true
+  context_caching: true
+  template_preprocessing: true
+  mcp_connection_pooling: true
+  
+  caching_strategy:
+    steering_context: 300  # 5 minutes
+    template_content: 1800  # 30 minutes
+    mcp_responses: 600     # 10 minutes
+    validation_results: 180 # 3 minutes
+
+# Security and Privacy
+
+security_configuration:
+  input_sanitization: true
+  output_validation: true
+  sensitive_data_redaction: true
+  audit_logging: true
+  
+  data_handling:
+    pii_detection: true
+    credential_scanning: true
+    proprietary_info_protection: true
+    
+  audit_requirements:
+    log_all_interactions: true
+    track_decision_points: true
+    record_approval_events: true
+    maintain_change_history: true
+
+# Integration Settings
+
+integration_settings:
+  mcp_enabled: true
+  git_integration: true
+  filesystem_monitoring: true
+  external_tool_connections: true
+  
+  mcp_server_priorities:
+    - name: "continuity"
+      priority: 1
+      capabilities: ["memory", "context", "patterns"]
+    - name: "filesystem" 
+      priority: 2
+      capabilities: ["file_operations", "monitoring"]
+    - name: "git"
+      priority: 3
+      capabilities: ["version_control", "history"]
+
+# Monitoring and Analytics
+
+monitoring:
+  workflow_metrics: true
+  agent_performance_tracking: true
+  quality_metrics: true
+  user_satisfaction_tracking: true
+  
+  metrics_collection:
+    cycle_time_per_phase: true
+    revision_count_per_phase: true
+    approval_time_tracking: true
+    error_rate_monitoring: true
+    context_usage_analysis: true
+    
+  alerting:
+    performance_degradation: true
+    quality_threshold_breaches: true
+    workflow_stalling: true
+    error_rate_spikes: true
+
+# Customization Points
+
+customization:
+  organization_specific_patterns: true
+  domain_specific_templates: true
+  custom_validation_rules: true
+  extended_agent_personalities: true
+  
+  extension_points:
+    - name: "custom_requirements_validation"
+      type: "validation_plugin"
+      configurable: true
+    - name: "organization_design_patterns"
+      type: "template_extension"
+      configurable: true
+    - name: "custom_task_estimation"
+      type: "estimation_plugin"
+      configurable: true

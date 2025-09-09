@@ -1,0 +1,254 @@
+# Spec-Driven Development Workflow
+
+name: "Spec Generation Workflow"
+description: "Three-phase workflow for generating requirements, design, and implementation tasks"
+version: "1.0.0"
+
+# Workflow Configuration
+config:
+  timeout: 1800  # 30 minutes maximum execution time
+  retry_attempts: 2
+  human_approval_required: true
+  context_preservation: true
+
+# Input Parameters
+inputs:
+  - name: "feature_request"
+    type: "string"
+    required: true
+    description: "High-level feature description from user"
+  
+  - name: "feature_name"
+    type: "string" 
+    required: true
+    description: "Kebab-case feature identifier"
+    pattern: "^[a-z0-9-]+$"
+  
+  - name: "priority"
+    type: "string"
+    required: false
+    default: "should"
+    enum: ["must", "should", "could", "wont"]
+  
+  - name: "additional_context"
+    type: "array"
+    required: false
+    description: "Additional files, URLs, or context materials"
+
+# Workflow Steps
+steps:
+  
+  # Phase 0: Initialization and Context Loading
+  - name: "initialize"
+    agent: "orchestrator"
+    action: "initialize_workflow"
+    inputs:
+      - feature_request: "{{ inputs.feature_request }}"
+      - feature_name: "{{ inputs.feature_name }}"
+      - priority: "{{ inputs.priority }}"
+    context:
+      steering_files:
+        - ".claude/steering/product.md"
+        - ".claude/steering/tech.md" 
+        - ".claude/steering/structure.md"
+        - ".claude/steering/security.md"
+      additional_context: "{{ inputs.additional_context }}"
+    outputs:
+      - workflow_context
+      - feature_metadata
+
+  # Phase 1: Requirements Generation
+  - name: "generate_requirements"
+    agent: "requirements"
+    action: "create_requirements_spec"
+    depends_on: ["initialize"]
+    inputs:
+      - feature_request: "{{ steps.initialize.outputs.workflow_context.feature_request }}"
+      - feature_metadata: "{{ steps.initialize.outputs.feature_metadata }}"
+    context:
+      steering_context: "{{ steps.initialize.outputs.workflow_context.steering_context }}"
+      template: ".claude/templates/requirements.md"
+    outputs:
+      - requirements_document
+      - requirements_summary
+    validation:
+      - check_ears_format: true
+      - check_user_stories: true
+      - check_acceptance_criteria: true
+    
+  # Human Approval Gate 1
+  - name: "approve_requirements"
+    type: "human_approval"
+    depends_on: ["generate_requirements"]
+    message: |
+      Requirements have been generated for feature: {{ inputs.feature_name }}
+      
+      Summary: {{ steps.generate_requirements.outputs.requirements_summary }}
+      
+      Please review the requirements document and confirm:
+      - All user stories are clear and complete
+      - Acceptance criteria follow EARS format
+      - Requirements align with product vision
+      
+      Approve to proceed to design phase?
+    options:
+      - approve: "Approve and proceed to design"
+      - revise: "Request revisions to requirements" 
+      - cancel: "Cancel workflow"
+    outputs:
+      - approval_status
+      - feedback_comments
+
+  # Phase 2: Design Generation  
+  - name: "generate_design"
+    agent: "design"
+    action: "create_technical_design"
+    depends_on: ["approve_requirements"]
+    condition: "{{ steps.approve_requirements.outputs.approval_status == 'approve' }}"
+    inputs:
+      - requirements_document: "{{ steps.generate_requirements.outputs.requirements_document }}"
+      - feature_metadata: "{{ steps.initialize.outputs.feature_metadata }}"
+    context:
+      steering_context: "{{ steps.initialize.outputs.workflow_context.steering_context }}"
+      existing_codebase: "src/"
+      template: ".claude/templates/design.md"
+    outputs:
+      - design_document
+      - architecture_diagrams
+      - design_summary
+    validation:
+      - check_requirements_coverage: true
+      - check_architecture_diagrams: true
+      - check_api_specifications: true
+
+  # Human Approval Gate 2
+  - name: "approve_design"
+    type: "human_approval"
+    depends_on: ["generate_design"]
+    message: |
+      Technical design has been created for feature: {{ inputs.feature_name }}
+      
+      Summary: {{ steps.generate_design.outputs.design_summary }}
+      
+      Please review the design document and confirm:
+      - Architecture aligns with existing system
+      - All requirements are addressed
+      - Technical approach is sound
+      - Security considerations are included
+      
+      Approve to proceed to task breakdown?
+    options:
+      - approve: "Approve and proceed to tasks"
+      - revise: "Request design revisions"
+      - back_to_requirements: "Revise requirements first"
+      - cancel: "Cancel workflow"
+    outputs:
+      - approval_status
+      - feedback_comments
+
+  # Phase 3: Task Breakdown
+  - name: "generate_tasks"
+    agent: "tasks"
+    action: "create_implementation_plan"
+    depends_on: ["approve_design"]
+    condition: "{{ steps.approve_design.outputs.approval_status == 'approve' }}"
+    inputs:
+      - requirements_document: "{{ steps.generate_requirements.outputs.requirements_document }}"
+      - design_document: "{{ steps.generate_design.outputs.design_document }}"
+      - feature_metadata: "{{ steps.initialize.outputs.feature_metadata }}"
+    context:
+      steering_context: "{{ steps.initialize.outputs.workflow_context.steering_context }}"
+      template: ".claude/templates/tasks.md"
+    outputs:
+      - tasks_document
+      - task_summary
+      - critical_path
+      - effort_estimate
+    validation:
+      - check_task_traceability: true
+      - check_completion_criteria: true
+      - check_dependency_mapping: true
+
+  # Human Approval Gate 3
+  - name: "approve_tasks"
+    type: "human_approval"
+    depends_on: ["generate_tasks"]
+    message: |
+      Implementation plan has been created for feature: {{ inputs.feature_name }}
+      
+      Summary: {{ steps.generate_tasks.outputs.task_summary }}
+      Estimated Effort: {{ steps.generate_tasks.outputs.effort_estimate }}
+      Critical Path: {{ steps.generate_tasks.outputs.critical_path }}
+      
+      Please review the task breakdown and confirm:
+      - All requirements have corresponding tasks
+      - Task dependencies are logical
+      - Effort estimates seem reasonable
+      - Testing tasks are included
+      
+      Approve to begin implementation?
+    options:
+      - approve: "Approve implementation plan"
+      - revise: "Request task revisions"
+      - back_to_design: "Revise design first"  
+      - manual_implementation: "Proceed with manual implementation"
+      - cancel: "Cancel workflow"
+    outputs:
+      - approval_status
+      - implementation_approach
+
+  # Phase 4: Finalization and Storage
+  - name: "finalize_specs"
+    agent: "orchestrator"
+    action: "store_specifications"
+    depends_on: ["approve_tasks"]
+    condition: "{{ steps.approve_tasks.outputs.approval_status in ['approve', 'manual_implementation'] }}"
+    inputs:
+      - feature_name: "{{ inputs.feature_name }}"
+      - requirements_document: "{{ steps.generate_requirements.outputs.requirements_document }}"
+      - design_document: "{{ steps.generate_design.outputs.design_document }}"
+      - tasks_document: "{{ steps.generate_tasks.outputs.tasks_document }}"
+      - feature_metadata: "{{ steps.initialize.outputs.feature_metadata }}"
+    outputs:
+      - spec_directory
+      - metadata_file
+      - workflow_summary
+
+# Error Handling
+error_handling:
+  - condition: "validation_failure"
+    action: "request_revision"
+    retry_limit: 3
+    
+  - condition: "human_rejection"
+    action: "iterate_phase"
+    preserve_context: true
+    
+  - condition: "timeout"
+    action: "save_progress"
+    notify_user: true
+
+# Success Criteria
+success_criteria:
+  - all_phases_approved: true
+  - validation_passed: true
+  - specs_stored: true
+  - metadata_complete: true
+
+# Output Artifacts
+outputs:
+  primary:
+    - name: "specifications"
+      path: "specs/{{ inputs.feature_name }}/"
+      files:
+        - requirements.md
+        - design.md
+        - tasks.md
+        - metadata.json
+  
+  secondary:
+    - name: "workflow_log"
+      path: ".claude/logs/{{ workflow.execution_id }}.log"
+      
+    - name: "approval_history"
+      path: "specs/{{ inputs.feature_name }}/approval-history.json"

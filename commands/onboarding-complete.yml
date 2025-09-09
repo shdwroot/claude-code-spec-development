@@ -1,0 +1,479 @@
+# Complete Project Onboarding Workflow
+
+name: "Complete Project Onboarding"
+description: "Comprehensive onboarding workflow combining repository analysis, context farming, and intelligent setup"
+version: "1.0.0"
+
+# Workflow Configuration
+config:
+  timeout: 5400  # 90 minutes for complete onboarding
+  retry_attempts: 2
+  human_interaction: true
+  comprehensive_analysis: true
+  context_preservation: true
+  learning_enabled: true
+
+# Input Parameters
+inputs:
+  - name: "project_root"
+    type: "string"
+    required: true
+    description: "Absolute path to the project root directory"
+  
+  - name: "project_name"
+    type: "string"
+    required: true
+    description: "Human-readable project name"
+  
+  - name: "team_context"
+    type: "object"
+    required: false
+    description: "Team information and preferences"
+    properties:
+      team_size: "number"
+      experience_level: "string"  # junior, mixed, senior
+      preferred_practices: "array"
+      compliance_requirements: "array"
+  
+  - name: "onboarding_goals"
+    type: "array"
+    required: false
+    default: ["understand_architecture", "extract_patterns", "generate_guidelines", "setup_development"]
+    description: "Specific onboarding objectives"
+  
+  - name: "analysis_focus"
+    type: "object" 
+    required: false
+    description: "Areas to prioritize during analysis"
+    properties:
+      architecture: "boolean"
+      business_domain: "boolean"
+      security: "boolean"
+      performance: "boolean"
+      testing: "boolean"
+
+# Phase 1: Pre-Onboarding Assessment
+- name: "assess_project_readiness"
+  agent: "onboarding-coordinator"
+  action: "evaluate_project_readiness"
+  inputs:
+    - project_root: "{{ inputs.project_root }}"
+    - project_name: "{{ inputs.project_name }}"
+  outputs:
+    - readiness_assessment
+    - recommended_analysis_approach
+    - estimated_duration
+    - potential_challenges
+
+# Phase 2: Repository Deep Dive
+- name: "comprehensive_repository_analysis"
+  agent: "codebase-archaeologist"
+  action: "perform_deep_repository_analysis"
+  depends_on: ["assess_project_readiness"]
+  inputs:
+    - project_root: "{{ inputs.project_root }}"
+    - analysis_approach: "{{ steps.assess_project_readiness.outputs.recommended_analysis_approach }}"
+  context:
+    mcp_tools: ["filesystem", "git"]
+    analysis_depth: "comprehensive"
+  outputs:
+    - repository_structure_analysis
+    - file_classification_results
+    - git_history_insights
+    - development_activity_patterns
+    - code_organization_assessment
+
+# Phase 3: Technology Ecosystem Discovery
+- name: "technology_stack_deep_analysis"
+  agent: "tech-stack-analyst"
+  action: "perform_comprehensive_tech_analysis"
+  depends_on: ["comprehensive_repository_analysis"]
+  inputs:
+    - repository_analysis: "{{ steps.comprehensive_repository_analysis.outputs }}"
+    - project_root: "{{ inputs.project_root }}"
+  outputs:
+    - complete_technology_inventory
+    - dependency_analysis_results
+    - framework_usage_patterns
+    - build_deployment_analysis
+    - modernization_assessment
+
+# Phase 4: Architecture Pattern Discovery
+- name: "architecture_deep_analysis"
+  agent: "architecture-detective"
+  action: "perform_comprehensive_architecture_analysis"
+  depends_on: ["technology_stack_deep_analysis"]
+  inputs:
+    - repository_analysis: "{{ steps.comprehensive_repository_analysis.outputs }}"
+    - technology_analysis: "{{ steps.technology_stack_deep_analysis.outputs }}"
+    - project_root: "{{ inputs.project_root }}"
+  outputs:
+    - architectural_patterns_analysis
+    - component_relationship_mapping
+    - data_flow_analysis
+    - integration_patterns_analysis
+    - design_quality_assessment
+
+# Phase 5: Code Quality and Standards Assessment
+- name: "code_quality_comprehensive_analysis"
+  agent: "code-quality-auditor"
+  action: "perform_quality_standards_analysis"
+  depends_on: ["architecture_deep_analysis"]
+  inputs:
+    - all_previous_analysis: "{{ steps }}"
+    - project_root: "{{ inputs.project_root }}"
+  outputs:
+    - code_quality_metrics
+    - coding_standards_analysis
+    - testing_pattern_assessment
+    - documentation_quality_review
+    - maintainability_assessment
+
+# Phase 6: Business Context and Domain Analysis
+- name: "business_domain_analysis"
+  agent: "domain-analyst"
+  action: "extract_comprehensive_business_context"
+  depends_on: ["code_quality_comprehensive_analysis"]
+  inputs:
+    - all_analysis_results: "{{ steps }}"
+    - project_root: "{{ inputs.project_root }}"
+  outputs:
+    - business_domain_model
+    - user_persona_extraction
+    - feature_capability_mapping
+    - workflow_pattern_analysis
+    - business_rules_extraction
+
+# Human Review Gate 1: Analysis Results Validation
+- name: "validate_analysis_results"
+  type: "human_review"
+  depends_on: ["business_domain_analysis"]
+  message: |
+    🔍 **Comprehensive Project Analysis Complete**
+    
+    **Project**: {{ inputs.project_name }}
+    **Analysis Duration**: {{ workflow.elapsed_time }}
+    
+    ## 📊 Analysis Summary
+    - **Repository Structure**: {{ steps.comprehensive_repository_analysis.outputs.repository_structure_analysis.summary }}
+    - **Technology Stack**: {{ steps.technology_stack_deep_analysis.outputs.complete_technology_inventory.primary_technologies | join(', ') }}
+    - **Architecture**: {{ steps.architecture_deep_analysis.outputs.architectural_patterns_analysis.primary_pattern }}
+    - **Code Quality**: {{ steps.code_quality_comprehensive_analysis.outputs.code_quality_metrics.overall_score }}/10
+    - **Business Domain**: {{ steps.business_domain_analysis.outputs.business_domain_model.domain_name }}
+    
+    ## 🔍 Key Insights Discovered
+    - **Development Patterns**: {{ steps.comprehensive_repository_analysis.outputs.development_activity_patterns.summary }}
+    - **Architecture Quality**: {{ steps.architecture_deep_analysis.outputs.design_quality_assessment.overall_rating }}
+    - **Modernization Score**: {{ steps.technology_stack_deep_analysis.outputs.modernization_assessment.score }}/10
+    - **Business Features**: {{ steps.business_domain_analysis.outputs.feature_capability_mapping.feature_count }} capabilities identified
+    
+    ## ⚠️ Potential Issues Identified
+    {% for issue in analysis_issues %}
+    - **{{ issue.category }}**: {{ issue.description }}
+    {% endfor %}
+    
+    **Review the detailed analysis results and provide feedback:**
+  options:
+    - approve: "Analysis looks accurate - proceed to steering file generation"
+    - refine: "Request deeper analysis in specific areas"
+    - clarify: "Need clarification on specific findings"
+    - restart: "Restart analysis with different parameters"
+  outputs:
+    - analysis_validation_result
+    - refinement_areas
+    - clarification_requests
+
+# Phase 7: Intelligent Steering File Generation
+- name: "generate_intelligent_steering_files"
+  agent: "steering-file-generator"
+  action: "synthesize_comprehensive_steering_files"
+  depends_on: ["validate_analysis_results"]
+  condition: "{{ steps.validate_analysis_results.outputs.analysis_validation_result == 'approve' }}"
+  inputs:
+    - comprehensive_analysis: "{{ steps }}"
+    - team_context: "{{ inputs.team_context }}"
+    - project_context: "{{ inputs }}"
+  context:
+    mcp_tools: ["continuity"]
+    generation_approach: "evidence_based"
+  outputs:
+    - intelligent_product_md
+    - intelligent_tech_md
+    - intelligent_structure_md
+    - intelligent_security_md
+    - custom_guidelines
+    - pattern_library
+
+# Phase 8: Development Environment Setup Analysis
+- name: "development_environment_analysis"
+  agent: "devenv-analyst"
+  action: "analyze_and_optimize_development_setup"
+  depends_on: ["generate_intelligent_steering_files"]
+  inputs:
+    - project_analysis: "{{ steps }}"
+    - steering_files: "{{ steps.generate_intelligent_steering_files.outputs }}"
+  outputs:
+    - development_setup_optimization
+    - build_process_recommendations
+    - testing_environment_setup
+    - deployment_pipeline_analysis
+    - development_workflow_optimization
+
+# Phase 9: Security and Compliance Assessment
+- name: "security_compliance_analysis"
+  agent: "security-compliance-analyst"
+  action: "assess_security_and_compliance_posture"
+  depends_on: ["development_environment_analysis"]
+  inputs:
+    - project_analysis: "{{ steps }}"
+    - security_steering: "{{ steps.generate_intelligent_steering_files.outputs.intelligent_security_md }}"
+  outputs:
+    - security_posture_assessment
+    - compliance_requirements_analysis
+    - vulnerability_assessment
+    - security_improvement_recommendations
+    - audit_readiness_evaluation
+
+# Phase 10: Performance and Scalability Analysis
+- name: "performance_scalability_analysis"
+  agent: "performance-analyst"
+  action: "analyze_performance_and_scalability_patterns"
+  depends_on: ["security_compliance_analysis"]
+  inputs:
+    - project_analysis: "{{ steps }}"
+    - architecture_analysis: "{{ steps.architecture_deep_analysis.outputs }}"
+  outputs:
+    - performance_baseline_assessment
+    - scalability_pattern_analysis
+    - bottleneck_identification
+    - optimization_opportunities
+    - monitoring_recommendations
+
+# Phase 11: Knowledge Base Creation and Synthesis
+- name: "create_comprehensive_knowledge_base"
+  agent: "knowledge-synthesizer"
+  action: "synthesize_complete_project_knowledge"
+  depends_on: ["performance_scalability_analysis"]
+  inputs:
+    - all_analysis_results: "{{ steps }}"
+    - project_context: "{{ inputs }}"
+  context:
+    mcp_tools: ["continuity"]
+    synthesis_approach: "comprehensive"
+  outputs:
+    - comprehensive_project_knowledge_base
+    - cross_referenced_insights
+    - pattern_library_complete
+    - decision_framework
+    - learning_recommendations
+    - future_analysis_triggers
+
+# Phase 12: Development Readiness Preparation
+- name: "prepare_development_readiness"
+  agent: "development-readiness-coordinator"
+  action: "prepare_comprehensive_development_setup"
+  depends_on: ["create_comprehensive_knowledge_base"]
+  inputs:
+    - knowledge_base: "{{ steps.create_comprehensive_knowledge_base.outputs }}"
+    - steering_files: "{{ steps.generate_intelligent_steering_files.outputs }}"
+    - environment_analysis: "{{ steps.development_environment_analysis.outputs }}"
+  outputs:
+    - development_setup_guide
+    - contribution_guidelines
+    - architecture_decision_records
+    - onboarding_checklist
+    - quality_gates_configuration
+
+# Human Review Gate 2: Complete Onboarding Review and Approval
+- name: "final_comprehensive_review"
+  type: "human_approval"
+  depends_on: ["prepare_development_readiness"]
+  message: |
+    🎉 **Complete Project Onboarding Finished!**
+    
+    **{{ inputs.project_name }}** has been comprehensively analyzed and prepared for spec-driven development.
+    
+    ## 📋 Generated Assets
+    ✅ **Intelligent Steering Files** - Tailored to your specific codebase patterns
+    ✅ **Comprehensive Architecture Documentation** - Complete system understanding
+    ✅ **Development Environment Setup** - Optimized workflow recommendations
+    ✅ **Security and Compliance Assessment** - Current posture and improvement plan
+    ✅ **Performance Analysis** - Baseline metrics and optimization opportunities
+    ✅ **Knowledge Base** - Searchable project intelligence for future reference
+    ✅ **Development Guidelines** - Team onboarding and contribution standards
+    
+    ## 🔍 Key Intelligence Gathered
+    
+    ### Architecture Intelligence
+    - **Primary Pattern**: {{ steps.architecture_deep_analysis.outputs.architectural_patterns_analysis.primary_pattern }}
+    - **Component Count**: {{ steps.architecture_deep_analysis.outputs.component_relationship_mapping.component_count }}
+    - **Integration Points**: {{ steps.architecture_deep_analysis.outputs.integration_patterns_analysis.integration_count }}
+    - **Design Quality**: {{ steps.architecture_deep_analysis.outputs.design_quality_assessment.overall_rating }}
+    
+    ### Technology Intelligence
+    - **Tech Stack Maturity**: {{ steps.technology_stack_deep_analysis.outputs.modernization_assessment.maturity_level }}
+    - **Dependency Health**: {{ steps.technology_stack_deep_analysis.outputs.dependency_analysis_results.health_score }}/10
+    - **Modernization Opportunities**: {{ steps.technology_stack_deep_analysis.outputs.modernization_assessment.opportunity_count }}
+    
+    ### Business Intelligence
+    - **Business Domain**: {{ steps.business_domain_analysis.outputs.business_domain_model.domain_name }}
+    - **User Personas**: {{ steps.business_domain_analysis.outputs.user_persona_extraction.persona_count }} identified
+    - **Core Capabilities**: {{ steps.business_domain_analysis.outputs.feature_capability_mapping.capability_count }}
+    
+    ### Quality Intelligence
+    - **Code Quality Score**: {{ steps.code_quality_comprehensive_analysis.outputs.code_quality_metrics.overall_score }}/10
+    - **Test Coverage**: {{ steps.code_quality_comprehensive_analysis.outputs.testing_pattern_assessment.coverage_percentage }}%
+    - **Documentation Quality**: {{ steps.code_quality_comprehensive_analysis.outputs.documentation_quality_review.quality_score }}/10
+    
+    ### Security Intelligence
+    - **Security Posture**: {{ steps.security_compliance_analysis.outputs.security_posture_assessment.overall_rating }}
+    - **Compliance Status**: {{ steps.security_compliance_analysis.outputs.compliance_requirements_analysis.compliance_level }}
+    - **Vulnerabilities**: {{ steps.security_compliance_analysis.outputs.vulnerability_assessment.vulnerability_count }} identified
+    
+    ## 🚀 Ready for Spec-Driven Development
+    
+    The system now has comprehensive understanding of:
+    - ✅ **Existing Architecture** - Patterns and conventions to follow
+    - ✅ **Technology Standards** - Stack and framework usage patterns
+    - ✅ **Business Context** - Domain knowledge and user understanding
+    - ✅ **Quality Requirements** - Testing, security, and performance standards
+    - ✅ **Development Workflow** - Optimized processes and tooling
+    
+    ## 📊 Next Steps Recommendation
+    
+    Based on the analysis, here are the recommended next steps:
+    1. **{{ recommendation_1 }}** (Priority: High)
+    2. **{{ recommendation_2 }}** (Priority: Medium)
+    3. **{{ recommendation_3 }}** (Priority: Low)
+    
+    **Are you ready to begin spec-driven feature development with this comprehensive context?**
+  options:
+    - proceed: "Begin spec-driven development - I'm ready!"
+    - export_docs: "Export all documentation for team review first"
+    - customize_setup: "Customize specific steering files or guidelines"
+    - schedule_updates: "Set up periodic re-analysis schedule"
+    - share_insights: "Generate executive summary for stakeholders"
+  outputs:
+    - final_onboarding_decision
+    - requested_exports
+    - customization_requests
+    - update_schedule
+    - sharing_requirements
+
+# Phase 13: Finalization and Context Storage
+- name: "finalize_comprehensive_onboarding"
+  agent: "onboarding-coordinator"
+  action: "finalize_complete_project_onboarding"
+  depends_on: ["final_comprehensive_review"]
+  condition: "{{ steps.final_comprehensive_review.outputs.final_onboarding_decision == 'proceed' }}"
+  inputs:
+    - project_context: "{{ inputs }}"
+    - all_analysis_outputs: "{{ steps }}"
+    - onboarding_decisions: "{{ steps.final_comprehensive_review.outputs }}"
+  context:
+    mcp_tools: ["continuity", "filesystem", "git"]
+    finalization_approach: "comprehensive"
+  outputs:
+    - onboarding_complete
+    - knowledge_base_indexed
+    - steering_files_installed
+    - development_environment_ready
+    - team_onboarding_materials
+    - project_intelligence_available
+
+# Advanced Error Handling
+error_handling:
+  - condition: "large_repository_timeout"
+    action: "enable_smart_sampling"
+    parameters:
+      sample_strategy: "representative"
+      coverage_target: 80
+    
+  - condition: "analysis_inconsistency"
+    action: "trigger_cross_validation"
+    escalate_after: 2
+    
+  - condition: "insufficient_context"
+    action: "request_additional_information"
+    human_intervention: true
+    
+  - condition: "security_concerns_detected"
+    action: "require_security_review"
+    priority: "high"
+    
+  - condition: "compliance_issues_found"
+    action: "document_compliance_gaps"
+    notify_stakeholders: true
+
+# Success Criteria
+success_criteria:
+  - comprehensive_analysis_completed: true
+  - steering_files_generated_and_validated: true
+  - knowledge_base_created_and_indexed: true
+  - development_environment_optimized: true
+  - team_onboarding_materials_prepared: true
+  - security_assessment_completed: true
+  - performance_baseline_established: true
+  - human_approval_obtained: true
+
+# Output Artifacts
+outputs:
+  primary:
+    - name: "intelligent_steering_files"
+      path: ".claude/steering/"
+      files:
+        - product.md
+        - tech.md
+        - structure.md
+        - security.md
+    
+    - name: "comprehensive_analysis"
+      path: ".claude/analysis/"
+      files:
+        - repository_analysis.md
+        - architecture_documentation.md
+        - technology_assessment.md
+        - code_quality_report.md
+        - security_assessment.md
+        - performance_baseline.md
+        - business_domain_analysis.md
+    
+    - name: "development_guides"
+      path: ".claude/guides/"
+      files:
+        - development_setup.md
+        - contribution_guidelines.md
+        - architecture_decisions.md
+        - quality_gates.md
+        - testing_strategy.md
+        - deployment_guide.md
+    
+    - name: "knowledge_base"
+      path: ".claude/knowledge/"
+      description: "Comprehensive searchable project intelligence"
+      mcp_storage: "continuity"
+  
+  secondary:
+    - name: "onboarding_materials"
+      path: ".claude/onboarding/"
+      files:
+        - team_onboarding_checklist.md
+        - project_overview.md
+        - quick_start_guide.md
+        - troubleshooting_guide.md
+    
+    - name: "executive_summary"
+      path: ".claude/reports/"
+      files:
+        - project_health_report.md
+        - modernization_roadmap.md
+        - technical_debt_assessment.md
+        - investment_recommendations.md
+
+# Monitoring and Continuous Improvement
+monitoring:
+  - track_onboarding_duration: true
+  - measure_analysis_accuracy: true
+  - monitor_steering_file_effectiveness: true
+  - assess_development_velocity_improvement: true
+  - evaluate_knowledge_base_usage: true

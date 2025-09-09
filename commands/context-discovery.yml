@@ -1,0 +1,475 @@
+# Context Discovery and Documentation Workflow
+
+name: "Context Discovery and Documentation"
+description: "Intelligent context discovery workflow for understanding existing codebases and building comprehensive development context"
+version: "1.0.0"
+
+# Workflow Configuration
+config:
+  timeout: 2700  # 45 minutes
+  retry_attempts: 2
+  human_interaction: true
+  context_preservation: true
+  learning_mode: true
+  incremental_discovery: true
+
+# Input Parameters
+inputs:
+  - name: "project_root"
+    type: "string"
+    required: true
+    description: "Root directory of the project to analyze"
+  
+  - name: "discovery_scope"
+    type: "string"
+    required: false
+    default: "comprehensive"
+    enum: ["focused", "standard", "comprehensive", "deep"]
+    description: "Depth and breadth of context discovery"
+  
+  - name: "discovery_targets"
+    type: "array"
+    required: false
+    default: ["architecture", "patterns", "conventions", "domain", "integrations"]
+    description: "Specific areas to focus context discovery on"
+  
+  - name: "existing_documentation"
+    type: "array"
+    required: false
+    description: "Paths to existing documentation to incorporate"
+  
+  - name: "team_knowledge"
+    type: "object"
+    required: false
+    description: "Existing team knowledge and institutional memory"
+
+# Phase 1: Discovery Planning and Scoping
+- name: "plan_context_discovery"
+  agent: "context-discovery-planner"
+  action: "create_discovery_strategy"
+  inputs:
+    - project_root: "{{ inputs.project_root }}"
+    - discovery_scope: "{{ inputs.discovery_scope }}"
+    - discovery_targets: "{{ inputs.discovery_targets }}"
+    - existing_docs: "{{ inputs.existing_documentation }}"
+  outputs:
+    - discovery_strategy
+    - analysis_prioritization
+    - expected_discoveries
+    - discovery_timeline
+
+# Phase 2: Multi-Dimensional Context Analysis
+- name: "perform_multidimensional_analysis"
+  type: "parallel"
+  depends_on: ["plan_context_discovery"]
+  branches:
+    
+    # Branch A: Structural Context Discovery
+    - name: "discover_structural_context"
+      agent: "structure-context-analyst"
+      action: "analyze_structural_patterns"
+      inputs:
+        - project_root: "{{ inputs.project_root }}"
+        - discovery_strategy: "{{ steps.plan_context_discovery.outputs.discovery_strategy }}"
+      context:
+        mcp_tools: ["filesystem"]
+        focus: "organization_patterns"
+      outputs:
+        - directory_organization_patterns
+        - file_naming_conventions
+        - module_boundary_analysis
+        - component_organization_insights
+        - structural_consistency_assessment
+    
+    # Branch B: Behavioral Context Discovery
+    - name: "discover_behavioral_context"
+      agent: "behavior-context-analyst"
+      action: "analyze_behavioral_patterns"
+      inputs:
+        - project_root: "{{ inputs.project_root }}"
+        - discovery_strategy: "{{ steps.plan_context_discovery.outputs.discovery_strategy }}"
+      context:
+        mcp_tools: ["filesystem", "git"]
+        focus: "interaction_patterns"
+      outputs:
+        - interaction_pattern_analysis
+        - data_flow_context
+        - event_handling_patterns
+        - workflow_pattern_discovery
+        - behavioral_consistency_analysis
+    
+    # Branch C: Domain Context Discovery
+    - name: "discover_domain_context"
+      agent: "domain-context-analyst"
+      action: "extract_domain_intelligence"
+      inputs:
+        - project_root: "{{ inputs.project_root }}"
+        - discovery_strategy: "{{ steps.plan_context_discovery.outputs.discovery_strategy }}"
+      context:
+        focus: "business_intelligence"
+      outputs:
+        - domain_model_extraction
+        - business_rule_discovery
+        - user_journey_analysis
+        - feature_relationship_mapping
+        - domain_language_glossary
+    
+    # Branch D: Technical Context Discovery  
+    - name: "discover_technical_context"
+      agent: "technical-context-analyst"
+      action: "analyze_technical_ecosystem"
+      inputs:
+        - project_root: "{{ inputs.project_root }}"
+        - discovery_strategy: "{{ steps.plan_context_discovery.outputs.discovery_strategy }}"
+      context:
+        focus: "technical_intelligence"
+      outputs:
+        - technology_usage_patterns
+        - integration_context_analysis
+        - performance_context_discovery
+        - security_context_assessment
+        - operational_context_analysis
+
+# Phase 3: Cross-Context Integration Analysis
+- name: "integrate_context_dimensions"
+  agent: "context-integration-analyst"
+  action: "synthesize_multidimensional_context"
+  depends_on: ["perform_multidimensional_analysis"]
+  inputs:
+    - structural_context: "{{ steps.perform_multidimensional_analysis.discover_structural_context.outputs }}"
+    - behavioral_context: "{{ steps.perform_multidimensional_analysis.discover_behavioral_context.outputs }}"
+    - domain_context: "{{ steps.perform_multidimensional_analysis.discover_domain_context.outputs }}"
+    - technical_context: "{{ steps.perform_multidimensional_analysis.discover_technical_context.outputs }}"
+  outputs:
+    - integrated_context_model
+    - cross_dimensional_relationships
+    - context_consistency_analysis
+    - integration_insights
+    - holistic_understanding
+
+# Phase 4: Pattern Library Creation
+- name: "create_pattern_library"
+  agent: "pattern-library-curator"
+  action: "curate_discovered_patterns"
+  depends_on: ["integrate_context_dimensions"]
+  inputs:
+    - integrated_context: "{{ steps.integrate_context_dimensions.outputs }}"
+    - all_analysis_results: "{{ steps.perform_multidimensional_analysis }}"
+  context:
+    mcp_tools: ["continuity"]
+    focus: "pattern_codification"
+  outputs:
+    - architectural_pattern_library
+    - code_pattern_library
+    - business_pattern_library
+    - integration_pattern_library
+    - anti_pattern_identification
+
+# Phase 5: Knowledge Gap Analysis
+- name: "identify_knowledge_gaps"
+  agent: "knowledge-gap-analyst"
+  action: "analyze_context_completeness"
+  depends_on: ["create_pattern_library"]
+  inputs:
+    - integrated_context: "{{ steps.integrate_context_dimensions.outputs }}"
+    - pattern_library: "{{ steps.create_pattern_library.outputs }}"
+    - discovery_targets: "{{ inputs.discovery_targets }}"
+  outputs:
+    - knowledge_completeness_assessment
+    - critical_gaps_identified
+    - missing_context_areas
+    - recommended_investigations
+    - confidence_scoring
+
+# Human Review Gate 1: Context Discovery Validation
+- name: "validate_discovered_context"
+  type: "human_review"
+  depends_on: ["identify_knowledge_gaps"]
+  message: |
+    🔍 **Context Discovery Analysis Complete**
+    
+    ## 📊 Discovery Results Summary
+    
+    ### Structural Context
+    - **Organization Pattern**: {{ steps.perform_multidimensional_analysis.discover_structural_context.outputs.directory_organization_patterns.primary_pattern }}
+    - **Naming Consistency**: {{ steps.perform_multidimensional_analysis.discover_structural_context.outputs.structural_consistency_assessment.consistency_score }}%
+    - **Module Boundaries**: {{ steps.perform_multidimensional_analysis.discover_structural_context.outputs.module_boundary_analysis.boundary_count }} identified
+    
+    ### Behavioral Context
+    - **Interaction Patterns**: {{ steps.perform_multidimensional_analysis.discover_behavioral_context.outputs.interaction_pattern_analysis.pattern_count }} patterns discovered
+    - **Data Flow Complexity**: {{ steps.perform_multidimensional_analysis.discover_behavioral_context.outputs.data_flow_context.complexity_level }}
+    - **Workflow Patterns**: {{ steps.perform_multidimensional_analysis.discover_behavioral_context.outputs.workflow_pattern_discovery.workflow_count }} workflows mapped
+    
+    ### Domain Context
+    - **Business Domain**: {{ steps.perform_multidimensional_analysis.discover_domain_context.outputs.domain_model_extraction.domain_name }}
+    - **Business Rules**: {{ steps.perform_multidimensional_analysis.discover_domain_context.outputs.business_rule_discovery.rule_count }} rules identified
+    - **User Journeys**: {{ steps.perform_multidimensional_analysis.discover_domain_context.outputs.user_journey_analysis.journey_count }} journeys mapped
+    - **Domain Language**: {{ steps.perform_multidimensional_analysis.discover_domain_context.outputs.domain_language_glossary.term_count }} terms cataloged
+    
+    ### Technical Context
+    - **Technology Patterns**: {{ steps.perform_multidimensional_analysis.discover_technical_context.outputs.technology_usage_patterns.pattern_count }} patterns
+    - **Integration Points**: {{ steps.perform_multidimensional_analysis.discover_technical_context.outputs.integration_context_analysis.integration_count }}
+    - **Performance Context**: {{ steps.perform_multidimensional_analysis.discover_technical_context.outputs.performance_context_discovery.performance_level }}
+    
+    ## 🔗 Integration Analysis
+    - **Cross-dimensional Relationships**: {{ steps.integrate_context_dimensions.outputs.cross_dimensional_relationships.relationship_count }}
+    - **Context Consistency**: {{ steps.integrate_context_dimensions.outputs.context_consistency_analysis.consistency_score }}%
+    - **Holistic Understanding**: {{ steps.integrate_context_dimensions.outputs.holistic_understanding.understanding_level }}
+    
+    ## 📚 Pattern Library
+    - **Architectural Patterns**: {{ steps.create_pattern_library.outputs.architectural_pattern_library.pattern_count }}
+    - **Code Patterns**: {{ steps.create_pattern_library.outputs.code_pattern_library.pattern_count }}
+    - **Business Patterns**: {{ steps.create_pattern_library.outputs.business_pattern_library.pattern_count }}
+    - **Anti-patterns**: {{ steps.create_pattern_library.outputs.anti_pattern_identification.antipattern_count }} identified
+    
+    ## ⚠️ Knowledge Gaps
+    {% if steps.identify_knowledge_gaps.outputs.critical_gaps_identified.gap_count > 0 %}
+    **Critical Gaps Identified**: {{ steps.identify_knowledge_gaps.outputs.critical_gaps_identified.gap_count }}
+    {% for gap in steps.identify_knowledge_gaps.outputs.critical_gaps_identified.gaps %}
+    - **{{ gap.area }}**: {{ gap.description }}
+    {% endfor %}
+    {% else %}
+    **No Critical Knowledge Gaps** - Discovery appears comprehensive
+    {% endif %}
+    
+    ## 📈 Confidence Assessment
+    - **Overall Confidence**: {{ steps.identify_knowledge_gaps.outputs.confidence_scoring.overall_confidence }}%
+    - **Completeness Score**: {{ steps.identify_knowledge_gaps.outputs.knowledge_completeness_assessment.completeness_percentage }}%
+    
+    **Does the discovered context accurately represent your project?**
+  options:
+    - approve: "Context discovery is accurate - proceed to documentation"
+    - investigate_gaps: "Investigate identified knowledge gaps first"
+    - deep_dive: "Request deeper analysis in specific areas"
+    - add_context: "Add additional context or corrections"
+    - revise_scope: "Revise discovery scope and re-analyze"
+  outputs:
+    - context_validation_result
+    - investigation_requests
+    - deep_dive_areas
+    - additional_context
+    - scope_revisions
+
+# Phase 6: Context Documentation Generation
+- name: "generate_context_documentation"
+  agent: "context-documentation-generator"
+  action: "create_comprehensive_context_documentation"
+  depends_on: ["validate_discovered_context"]
+  condition: "{{ steps.validate_discovered_context.outputs.context_validation_result == 'approve' }}"
+  inputs:
+    - integrated_context: "{{ steps.integrate_context_dimensions.outputs }}"
+    - pattern_library: "{{ steps.create_pattern_library.outputs }}"
+    - validation_feedback: "{{ steps.validate_discovered_context.outputs }}"
+  outputs:
+    - context_architecture_document
+    - pattern_reference_guide
+    - domain_knowledge_base
+    - technical_context_guide
+    - integration_handbook
+    - context_decision_records
+
+# Phase 7: Contextual Guidance Creation
+- name: "create_contextual_guidance"
+  agent: "contextual-guidance-generator"
+  action: "generate_context_aware_guidance"
+  depends_on: ["generate_context_documentation"]
+  inputs:
+    - context_documentation: "{{ steps.generate_context_documentation.outputs }}"
+    - pattern_library: "{{ steps.create_pattern_library.outputs }}"
+    - integrated_context: "{{ steps.integrate_context_dimensions.outputs }}"
+  outputs:
+    - development_context_guide
+    - pattern_usage_guidelines
+    - decision_making_framework
+    - context_aware_best_practices
+    - troubleshooting_context_guide
+
+# Phase 8: Context Validation and Testing
+- name: "validate_contextual_accuracy"
+  agent: "context-validation-specialist"
+  action: "validate_context_accuracy_and_completeness"
+  depends_on: ["create_contextual_guidance"]
+  inputs:
+    - all_context_artifacts: "{{ steps }}"
+    - project_root: "{{ inputs.project_root }}"
+  context:
+    validation_approach: "cross_reference"
+  outputs:
+    - accuracy_validation_results
+    - completeness_verification
+    - consistency_check_results
+    - context_quality_metrics
+    - validation_recommendations
+
+# Phase 9: Knowledge Base Integration
+- name: "integrate_with_knowledge_base"
+  agent: "knowledge-base-integrator"
+  action: "integrate_context_with_knowledge_base"
+  depends_on: ["validate_contextual_accuracy"]
+  inputs:
+    - all_context_artifacts: "{{ steps }}"
+    - validation_results: "{{ steps.validate_contextual_accuracy.outputs }}"
+  context:
+    mcp_tools: ["continuity"]
+    integration_strategy: "comprehensive"
+  outputs:
+    - knowledge_base_integration_complete
+    - searchable_context_index
+    - cross_reference_mappings
+    - context_relationship_graph
+    - knowledge_base_metrics
+
+# Human Review Gate 2: Final Context Approval
+- name: "final_context_approval"
+  type: "human_approval"
+  depends_on: ["integrate_with_knowledge_base"]
+  message: |
+    🎯 **Context Discovery and Documentation Complete!**
+    
+    ## 📋 Generated Context Assets
+    
+    ### 📚 Documentation Created
+    ✅ **Context Architecture Document** - Complete system context understanding
+    ✅ **Pattern Reference Guide** - Codified patterns and their applications
+    ✅ **Domain Knowledge Base** - Business context and domain intelligence
+    ✅ **Technical Context Guide** - Technology ecosystem and integration patterns
+    ✅ **Integration Handbook** - Cross-system integration context
+    ✅ **Context Decision Records** - Historical context and decision rationale
+    
+    ### 🛠️ Guidance Generated
+    ✅ **Development Context Guide** - Context-aware development practices
+    ✅ **Pattern Usage Guidelines** - When and how to apply discovered patterns
+    ✅ **Decision Making Framework** - Context-informed decision criteria
+    ✅ **Best Practices** - Context-specific recommendations
+    ✅ **Troubleshooting Guide** - Context-aware problem resolution
+    
+    ## 📊 Context Quality Metrics
+    - **Accuracy Score**: {{ steps.validate_contextual_accuracy.outputs.context_quality_metrics.accuracy_score }}%
+    - **Completeness Score**: {{ steps.validate_contextual_accuracy.outputs.context_quality_metrics.completeness_score }}%
+    - **Consistency Score**: {{ steps.validate_contextual_accuracy.outputs.context_quality_metrics.consistency_score }}%
+    - **Usability Score**: {{ steps.validate_contextual_accuracy.outputs.context_quality_metrics.usability_score }}%
+    
+    ## 🔍 Knowledge Base Integration
+    - **Indexed Context Items**: {{ steps.integrate_with_knowledge_base.outputs.knowledge_base_metrics.indexed_items }}
+    - **Cross-references Created**: {{ steps.integrate_with_knowledge_base.outputs.knowledge_base_metrics.cross_references }}
+    - **Searchable Entities**: {{ steps.integrate_with_knowledge_base.outputs.knowledge_base_metrics.searchable_entities }}
+    
+    ## 🚀 Ready for Development
+    
+    Your project now has comprehensive contextual intelligence including:
+    - ✅ **Architectural Context** - Understanding of system structure and patterns
+    - ✅ **Behavioral Context** - Knowledge of how components interact
+    - ✅ **Domain Context** - Business intelligence and domain expertise
+    - ✅ **Technical Context** - Technology ecosystem and integration patterns
+    - ✅ **Pattern Library** - Codified best practices and anti-patterns
+    - ✅ **Guidance Framework** - Context-aware decision making support
+    
+    **This context is now available for spec-driven development and will inform all future architectural decisions.**
+    
+    **Approve to complete context discovery process?**
+  options:
+    - approve: "Approve - Context discovery complete and ready for use"
+    - export_summary: "Export context summary for team review"
+    - schedule_updates: "Set up periodic context refresh schedule"
+    - customize_guidance: "Customize specific guidance or documentation"
+  outputs:
+    - final_context_approval
+    - export_requests
+    - update_schedule
+    - customization_requests
+
+# Phase 10: Context Discovery Finalization
+- name: "finalize_context_discovery"
+  agent: "context-discovery-coordinator"
+  action: "finalize_context_discovery_process"
+  depends_on: ["final_context_approval"]
+  condition: "{{ steps.final_context_approval.outputs.final_context_approval == 'approve' }}"
+  inputs:
+    - all_context_assets: "{{ steps }}"
+    - approval_decisions: "{{ steps.final_context_approval.outputs }}"
+  context:
+    mcp_tools: ["continuity", "filesystem"]
+    finalization_strategy: "comprehensive"
+  outputs:
+    - context_discovery_complete
+    - context_assets_stored
+    - knowledge_base_finalized
+    - guidance_systems_active
+    - context_monitoring_enabled
+
+# Error Handling
+error_handling:
+  - condition: "context_analysis_timeout"
+    action: "save_partial_context"
+    escalate: true
+    
+  - condition: "pattern_extraction_failure"
+    action: "retry_with_simplified_approach"
+    max_retries: 2
+    
+  - condition: "knowledge_gap_too_large"
+    action: "request_additional_information"
+    human_intervention: true
+    
+  - condition: "context_validation_failure"
+    action: "iterative_refinement"
+    preserve_valid_context: true
+    
+  - condition: "integration_conflicts"
+    action: "conflict_resolution_analysis"
+    escalate_after: 1
+
+# Success Criteria
+success_criteria:
+  - multidimensional_context_analysis_complete: true
+  - pattern_library_created_and_validated: true
+  - context_documentation_generated: true
+  - knowledge_base_integration_successful: true
+  - context_quality_metrics_acceptable: true
+  - human_approval_obtained: true
+
+# Output Artifacts
+outputs:
+  primary:
+    - name: "context_documentation"
+      path: ".claude/context/"
+      files:
+        - context_architecture.md
+        - pattern_reference_guide.md
+        - domain_knowledge_base.md
+        - technical_context_guide.md
+        - integration_handbook.md
+        - context_decision_records.md
+    
+    - name: "contextual_guidance"
+      path: ".claude/guidance/"
+      files:
+        - development_context_guide.md
+        - pattern_usage_guidelines.md
+        - decision_making_framework.md
+        - context_aware_best_practices.md
+        - troubleshooting_context_guide.md
+    
+    - name: "pattern_library"
+      path: ".claude/patterns/"
+      files:
+        - architectural_patterns.md
+        - code_patterns.md
+        - business_patterns.md
+        - integration_patterns.md
+        - anti_patterns.md
+  
+  secondary:
+    - name: "context_analysis_reports"
+      path: ".claude/analysis/context/"
+      files:
+        - structural_context_analysis.md
+        - behavioral_context_analysis.md
+        - domain_context_analysis.md
+        - technical_context_analysis.md
+        - integration_analysis.md
+    
+    - name: "knowledge_base_assets"
+      path: ".claude/knowledge/"
+      description: "Searchable context intelligence stored in MCP Continuity"
+      mcp_storage: "continuity"

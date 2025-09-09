@@ -1,0 +1,278 @@
+# Validation Rules for Spec-Driven Development System
+
+# Workflow Validation Rules
+workflow_validation:
+  required_fields:
+    - name
+    - description
+    - version
+    - config
+    - inputs
+    - steps
+    - outputs
+  
+  config_requirements:
+    timeout: "number between 300 and 7200"
+    retry_attempts: "number between 1 and 5"
+    human_interaction: "boolean"
+  
+  step_validation:
+    required_fields:
+      - name
+      - agent
+      - action
+      - outputs
+    
+    conditional_fields:
+      depends_on: "required if not first step"
+      condition: "required if conditional execution"
+      human_gate: "required for approval steps"
+
+# Agent System Prompt Validation
+agent_prompt_validation:
+  required_sections:
+    - role_definition: "Clear role and specialization"
+    - expertise_areas: "List of domain expertise"
+    - core_responsibilities: "3-5 main responsibilities"
+    - analysis_methodology: "Structured approach description"
+    - output_format: "Template or example format"
+    - mcp_integration: "MCP usage strategy"
+    - quality_validation: "Validation checklist"
+    - communication_style: "Communication guidelines"
+  
+  content_requirements:
+    role_clarity: "Role must be specific and actionable"
+    methodology_structure: "Must include step-by-step approach"
+    output_examples: "Must provide concrete examples"
+    validation_criteria: "Must include measurable criteria"
+
+# Steering File Validation
+steering_file_validation:
+  product_md:
+    required_sections:
+      - product_overview
+      - target_users
+      - core_features
+      - success_metrics
+      - strategic_context
+    
+    content_validation:
+      user_personas: "Must include at least 2 personas"
+      success_metrics: "Must be measurable and specific"
+      feature_alignment: "Features must align with user needs"
+  
+  tech_md:
+    required_sections:
+      - technology_ecosystem
+      - coding_standards
+      - quality_standards
+      - development_patterns
+      - integration_patterns
+    
+    content_validation:
+      technology_specificity: "Must specify versions and configurations"
+      standards_enforceability: "Standards must be measurable"
+      pattern_examples: "Must include concrete examples"
+  
+  structure_md:
+    required_sections:
+      - directory_architecture
+      - naming_conventions
+      - component_organization
+      - quality_gates
+    
+    content_validation:
+      naming_consistency: "Conventions must be systematic"
+      organization_logic: "Structure must have clear rationale"
+      quality_measurability: "Gates must have objective criteria"
+  
+  security_md:
+    required_sections:
+      - security_principles
+      - authentication_authorization
+      - data_protection
+      - compliance_requirements
+    
+    content_validation:
+      principle_actionability: "Principles must be implementable"
+      compliance_specificity: "Requirements must be specific"
+      protection_comprehensiveness: "Must cover all data types"
+
+# Template Validation Rules
+template_validation:
+  variable_format:
+    pattern: "\\{[A-Z_][A-Z0-9_]*\\}"
+    description: "Variables must be uppercase with underscores"
+  
+  required_elements:
+    - template_purpose: "Clear description of template usage"
+    - variable_definitions: "List of all variables with descriptions"
+    - example_content: "Concrete examples of expected output"
+    - validation_criteria: "Criteria for template completion"
+  
+  content_requirements:
+    variable_usage: "All variables must be used in template"
+    example_completeness: "Examples must demonstrate all sections"
+    instruction_clarity: "Instructions must be actionable"
+
+# MCP Integration Validation
+mcp_integration_validation:
+  server_configuration:
+    required_fields:
+      - name
+      - description
+      - connection
+      - capabilities
+      - tools
+    
+    connection_validation:
+      type: "Must be valid connection type (stdio, http, etc.)"
+      command: "Command must be executable"
+      args: "Arguments must be valid for command"
+  
+  agent_integration:
+    required_patterns:
+      - context_storage: "Agents must store context in MCP"
+      - pattern_retrieval: "Agents must retrieve similar patterns"
+      - learning_integration: "Agents must contribute to learning"
+  
+  continuity_usage:
+    required_operations:
+      - store_context
+      - retrieve_context
+      - create_relationship
+      - analyze_patterns
+
+# Quality Gate Validation
+quality_gate_validation:
+  human_approval_gates:
+    required_elements:
+      - clear_summary: "Summary of work completed"
+      - decision_options: "Clear options for human decision"
+      - context_information: "Sufficient context for informed decision"
+      - feedback_mechanism: "Way to provide feedback on results"
+    
+    validation_criteria:
+      option_clarity: "Options must be mutually exclusive and complete"
+      context_sufficiency: "Context must enable informed decisions"
+      feedback_actionability: "Feedback must be actionable"
+  
+  automated_validation:
+    required_checks:
+      - input_completeness: "All required inputs provided"
+      - format_compliance: "Output follows specified format"
+      - content_validation: "Content meets quality criteria"
+      - traceability_links: "Links to source requirements maintained"
+
+# Error Handling Validation
+error_handling_validation:
+  required_error_types:
+    - timeout_errors: "Handle workflow timeouts"
+    - validation_failures: "Handle validation errors"
+    - human_rejection: "Handle human feedback and rejection"
+    - context_loss: "Handle context preservation failures"
+    - external_service_failures: "Handle MCP and external service issues"
+  
+  error_response_requirements:
+    error_categorization: "Errors must be categorized by type"
+    recovery_strategies: "Each error type must have recovery approach"
+    user_communication: "Clear communication of error state"
+    context_preservation: "Maintain context through error recovery"
+
+# Output Validation Rules
+output_validation:
+  specification_documents:
+    requirements_validation:
+      ears_syntax: "Acceptance criteria must use EARS format"
+      user_story_format: "Stories must follow standard format"
+      traceability_ids: "Requirements must have unique IDs"
+      completeness_scoring: "Must achieve minimum completeness score"
+    
+    design_validation:
+      architecture_diagrams: "Must include Mermaid.js diagrams"
+      api_specifications: "Must include complete API contracts"
+      data_models: "Must define all data structures"
+      security_considerations: "Must address security requirements"
+    
+    tasks_validation:
+      task_granularity: "Tasks must be 4-8 hour work units"
+      dependency_mapping: "Dependencies must be clearly identified"
+      completion_criteria: "Each task must have objective completion criteria"
+      effort_estimation: "Tasks must include effort estimates"
+  
+  documentation_validation:
+    structure_compliance: "Documents must follow template structure"
+    content_completeness: "All template sections must be populated"
+    cross_references: "Internal links must be valid"
+    version_consistency: "Version information must be consistent"
+
+# Integration Testing Rules
+integration_testing:
+  workflow_integration:
+    context_flow: "Context must flow correctly between workflow steps"
+    agent_handoffs: "Agent handoffs must preserve all necessary context"
+    human_gate_functionality: "Human approval gates must function correctly"
+    error_recovery: "Error scenarios must be handled appropriately"
+  
+  mcp_integration:
+    server_connectivity: "MCP servers must be accessible"
+    operation_functionality: "MCP operations must work as expected"
+    context_persistence: "Context must persist across sessions"
+    pattern_learning: "Learning mechanisms must function correctly"
+  
+  agent_coordination:
+    orchestration_flow: "Agent orchestration must follow defined workflows"
+    specialization_boundaries: "Agents must stay within defined expertise areas"
+    quality_validation: "Agent outputs must pass quality validation"
+    context_accuracy: "Agents must maintain context accuracy"
+
+# Performance Validation
+performance_validation:
+  workflow_timing:
+    initialization: "Project initialization must complete within timeout"
+    spec_generation: "Feature specification must complete within timeout"
+    context_discovery: "Context analysis must complete within timeout"
+  
+  resource_usage:
+    memory_constraints: "Workflows must not exceed memory limits"
+    token_usage: "LLM token usage must be efficient and within limits"
+    mcp_performance: "MCP operations must perform within acceptable limits"
+  
+  scalability_requirements:
+    large_repositories: "System must handle repositories with 10,000+ files"
+    complex_architectures: "System must analyze complex multi-service architectures"
+    concurrent_usage: "System must support multiple concurrent workflows"
+
+# Security Validation
+security_validation:
+  data_protection:
+    sensitive_information: "Must not store sensitive information in plain text"
+    access_control: "Must implement appropriate access controls"
+    audit_logging: "Must maintain comprehensive audit logs"
+  
+  input_validation:
+    injection_prevention: "Must prevent code injection in generated outputs"
+    path_traversal: "Must prevent path traversal attacks in file operations"
+    command_injection: "Must prevent command injection in system operations"
+  
+  external_integration:
+    mcp_security: "MCP communications must be secure"
+    api_authentication: "External API calls must use proper authentication"
+    data_transmission: "Data transmission must be encrypted where appropriate"
+
+# Compliance Validation
+compliance_validation:
+  documentation_requirements:
+    audit_trail: "Must maintain complete audit trail of all decisions"
+    traceability_matrix: "Must provide complete traceability from requirements to code"
+    change_documentation: "Must document all changes and their rationale"
+  
+  quality_assurance:
+    review_requirements: "Must have appropriate review checkpoints"
+    validation_coverage: "Must validate all critical system components"
+    testing_requirements: "Must include comprehensive testing validation"
+  
+  data_governance:
+    data_classification: "Must classify all data according to sensitivity"
+    retention_policies: "Must implement appropriate data retention"
+    privacy_protection: "Must protect personally identifiable information"

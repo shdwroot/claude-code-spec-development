@@ -1,0 +1,74 @@
+{
+  "feature_id": "{FEATURE_ID}",
+  "feature_name": "{FEATURE_NAME}",
+  "version": "1.0.0",
+  "created_date": "{CREATION_DATE}",
+  "last_modified": "{LAST_MODIFIED}",
+  "status": "{STATUS}",
+  "phase": "{CURRENT_PHASE}",
+  
+  "workflow": {
+    "workflow_type": "{WORKFLOW_TYPE}",
+    "initiated_by": "{INITIATED_BY}",
+    "approval_gates": {
+      "requirements_approved": false,
+      "design_approved": false,
+      "tasks_approved": false,
+      "implementation_approved": false
+    },
+    "phase_completion": {
+      "requirements": "{REQUIREMENTS_COMPLETION_STATUS}",
+      "design": "{DESIGN_COMPLETION_STATUS}",
+      "tasks": "{TASKS_COMPLETION_STATUS}",
+      "implementation": "{IMPLEMENTATION_COMPLETION_STATUS}"
+    }
+  },
+  
+  "traceability": {
+    "original_request": "{ORIGINAL_REQUEST}",
+    "requirements_document": "specs/{FEATURE_NAME}/requirements.md",
+    "design_document": "specs/{FEATURE_NAME}/design.md",
+    "tasks_document": "specs/{FEATURE_NAME}/tasks.md",
+    "implementation_files": [],
+    "test_files": [],
+    "related_features": []
+  },
+  
+  "quality_metrics": {
+    "requirements_completeness": 0,
+    "design_completeness": 0,
+    "task_completeness": 0,
+    "test_coverage": 0,
+    "code_quality_score": 0
+  },
+  
+  "stakeholders": {
+    "product_owner": "{PRODUCT_OWNER}",
+    "technical_lead": "{TECHNICAL_LEAD}",
+    "reviewers": [],
+    "implementers": []
+  },
+  
+  "context": {
+    "project_context": "{PROJECT_CONTEXT}",
+    "business_domain": "{BUSINESS_DOMAIN}",
+    "technical_constraints": [],
+    "dependencies": [],
+    "assumptions": []
+  },
+  
+  "validation": {
+    "requirements_validated": false,
+    "design_validated": false,
+    "tasks_validated": false,
+    "security_reviewed": false,
+    "architecture_reviewed": false
+  },
+  
+  "mcp_context": {
+    "stored_patterns": [],
+    "retrieved_context": [],
+    "learning_outcomes": [],
+    "continuity_session_id": "{CONTINUITY_SESSION_ID}"
+  }
+}

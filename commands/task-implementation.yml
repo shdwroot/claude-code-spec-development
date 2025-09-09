@@ -1,0 +1,346 @@
+# Task Implementation Workflow
+
+name: "Task Implementation Workflow"
+description: "Execute specific implementation tasks from generated specifications with quality gates and testing"
+version: "1.0.0"
+
+# Workflow Configuration
+config:
+  timeout: 3600  # 60 minutes for complex implementations
+  retry_attempts: 2
+  human_approval_required: true
+  context_preservation: true
+  quality_validation: true
+
+# Input Parameters
+inputs:
+  - name: "feature_name"
+    type: "string"
+    required: true
+    description: "Name of the feature (matching specs directory)"
+  
+  - name: "task_number"
+    type: "number"
+    required: true
+    description: "Task number to implement from tasks.md"
+  
+  - name: "implementation_approach"
+    type: "string"
+    required: false
+    default: "incremental"
+    enum: ["incremental", "complete", "test-first"]
+    description: "Implementation strategy"
+  
+  - name: "quality_level"
+    type: "string"
+    required: false
+    default: "production"
+    enum: ["prototype", "development", "production"]
+    description: "Code quality and testing requirements"
+
+# Phase 1: Task Analysis and Context Loading
+- name: "analyze_implementation_task"
+  agent: "task-analyzer"
+  action: "analyze_specific_task"
+  inputs:
+    - feature_name: "{{ inputs.feature_name }}"
+    - task_number: "{{ inputs.task_number }}"
+    - spec_directory: "specs/{{ inputs.feature_name }}/"
+  context:
+    steering_files:
+      - ".claude/steering/product.md"
+      - ".claude/steering/tech.md"
+      - ".claude/steering/structure.md"
+      - ".claude/steering/security.md"
+    specification_files:
+      - "specs/{{ inputs.feature_name }}/requirements.md"
+      - "specs/{{ inputs.feature_name }}/design.md"
+      - "specs/{{ inputs.feature_name }}/tasks.md"
+  outputs:
+    - task_details
+    - implementation_context
+    - dependency_analysis
+    - acceptance_criteria
+    - effort_estimate
+  validation:
+    - task_exists: true
+    - dependencies_satisfied: true
+    - acceptance_criteria_clear: true
+
+# Phase 2: Implementation Planning
+- name: "plan_task_implementation"
+  agent: "implementation-planner"
+  action: "create_detailed_implementation_plan"
+  depends_on: ["analyze_implementation_task"]
+  inputs:
+    - task_details: "{{ steps.analyze_implementation_task.outputs.task_details }}"
+    - implementation_context: "{{ steps.analyze_implementation_task.outputs.implementation_context }}"
+    - implementation_approach: "{{ inputs.implementation_approach }}"
+  outputs:
+    - implementation_plan
+    - code_structure
+    - test_strategy
+    - integration_points
+    - risk_assessment
+  validation:
+    - plan_completeness: true
+    - test_coverage_adequate: true
+    - integration_considered: true
+
+# Human Approval Gate 1: Implementation Plan Review
+- name: "approve_implementation_plan"
+  type: "human_approval"
+  depends_on: ["plan_task_implementation"]
+  message: |
+    Implementation plan ready for task: {{ inputs.task_number }} of {{ inputs.feature_name }}
+    
+    **Task**: {{ steps.analyze_implementation_task.outputs.task_details.description }}
+    **Estimated Effort**: {{ steps.analyze_implementation_task.outputs.effort_estimate }}
+    **Approach**: {{ inputs.implementation_approach }}
+    
+    **Implementation Plan Summary**:
+    {{ steps.plan_task_implementation.outputs.implementation_plan.summary }}
+    
+    **Code Structure**:
+    - Files to create: {{ steps.plan_task_implementation.outputs.code_structure.new_files | length }}
+    - Files to modify: {{ steps.plan_task_implementation.outputs.code_structure.modified_files | length }}
+    - Tests to create: {{ steps.plan_task_implementation.outputs.test_strategy.test_files | length }}
+    
+    **Risk Assessment**: {{ steps.plan_task_implementation.outputs.risk_assessment.level }}
+    
+    **Dependencies**: 
+    {% for dep in steps.analyze_implementation_task.outputs.dependency_analysis.dependencies %}
+    - {{ dep.description }} ({{ dep.status }})
+    {% endfor %}
+    
+    Approve to begin implementation?
+  options:
+    - approve: "Approve implementation plan"
+    - revise: "Request plan revisions"
+    - change_approach: "Change implementation approach"
+    - cancel: "Cancel task implementation"
+  outputs:
+    - approval_status
+    - revision_feedback
+    - approach_changes
+
+# Phase 3: Code Implementation
+- name: "implement_task_code"
+  agent: "implementation-agent"
+  action: "execute_task_implementation"
+  depends_on: ["approve_implementation_plan"]
+  condition: "{{ steps.approve_implementation_plan.outputs.approval_status == 'approve' }}"
+  inputs:
+    - implementation_plan: "{{ steps.plan_task_implementation.outputs.implementation_plan }}"
+    - task_details: "{{ steps.analyze_implementation_task.outputs.task_details }}"
+    - quality_level: "{{ inputs.quality_level }}"
+  context:
+    steering_context: "{{ steps.analyze_implementation_task.outputs.implementation_context.steering_context }}"
+    existing_codebase: "src/"
+    test_framework: "{{ steps.analyze_implementation_task.outputs.implementation_context.test_framework }}"
+  outputs:
+    - implemented_code
+    - created_files
+    - modified_files
+    - code_quality_metrics
+    - implementation_notes
+  validation:
+    - code_compiles: true
+    - follows_conventions: true
+    - security_standards_met: true
+
+# Phase 4: Test Implementation
+- name: "implement_tests"
+  agent: "test-implementation-agent"
+  action: "create_comprehensive_tests"
+  depends_on: ["implement_task_code"]
+  inputs:
+    - implemented_code: "{{ steps.implement_task_code.outputs.implemented_code }}"
+    - test_strategy: "{{ steps.plan_task_implementation.outputs.test_strategy }}"
+    - acceptance_criteria: "{{ steps.analyze_implementation_task.outputs.acceptance_criteria }}"
+  outputs:
+    - test_files_created
+    - test_coverage_report
+    - integration_tests
+    - end_to_end_tests
+    - test_execution_results
+  validation:
+    - all_tests_pass: true
+    - coverage_threshold_met: true
+    - edge_cases_covered: true
+
+# Phase 5: Quality Assurance
+- name: "perform_quality_checks"
+  agent: "quality-assurance-agent"
+  action: "comprehensive_quality_validation"
+  depends_on: ["implement_tests"]
+  inputs:
+    - implemented_code: "{{ steps.implement_task_code.outputs }}"
+    - test_results: "{{ steps.implement_tests.outputs }}"
+    - quality_level: "{{ inputs.quality_level }}"
+  outputs:
+    - code_quality_score
+    - security_scan_results
+    - performance_analysis
+    - maintainability_assessment
+    - quality_recommendations
+  validation:
+    - quality_threshold_met: true
+    - security_issues_resolved: true
+    - performance_acceptable: true
+
+# Human Approval Gate 2: Implementation Review
+- name: "review_implementation"
+  type: "human_approval"
+  depends_on: ["perform_quality_checks"]
+  message: |
+    Task implementation complete: {{ inputs.task_number }} of {{ inputs.feature_name }}
+    
+    **Implementation Summary**:
+    - **Files Created**: {{ steps.implement_task_code.outputs.created_files | length }}
+    - **Files Modified**: {{ steps.implement_task_code.outputs.modified_files | length }}
+    - **Tests Created**: {{ steps.implement_tests.outputs.test_files_created | length }}
+    - **Test Coverage**: {{ steps.implement_tests.outputs.test_coverage_report.percentage }}%
+    
+    **Quality Metrics**:
+    - **Code Quality Score**: {{ steps.perform_quality_checks.outputs.code_quality_score }}/10
+    - **Security Scan**: {{ steps.perform_quality_checks.outputs.security_scan_results.status }}
+    - **Performance**: {{ steps.perform_quality_checks.outputs.performance_analysis.rating }}
+    - **Maintainability**: {{ steps.perform_quality_checks.outputs.maintainability_assessment.score }}/10
+    
+    **Test Results**:
+    - **Unit Tests**: {{ steps.implement_tests.outputs.test_execution_results.unit_tests.passed }}/{{ steps.implement_tests.outputs.test_execution_results.unit_tests.total }}
+    - **Integration Tests**: {{ steps.implement_tests.outputs.test_execution_results.integration_tests.passed }}/{{ steps.implement_tests.outputs.test_execution_results.integration_tests.total }}
+    
+    {% if steps.perform_quality_checks.outputs.quality_recommendations %}
+    **Quality Recommendations**:
+    {% for rec in steps.perform_quality_checks.outputs.quality_recommendations %}
+    - {{ rec.description }} ({{ rec.priority }})
+    {% endfor %}
+    {% endif %}
+    
+    **Acceptance Criteria Status**:
+    {% for criteria in steps.analyze_implementation_task.outputs.acceptance_criteria %}
+    - {{ criteria.description }}: {{ criteria.status }}
+    {% endfor %}
+    
+    Approve implementation?
+  options:
+    - approve: "Approve and mark task complete"
+    - refine: "Request code improvements"
+    - test_more: "Add additional tests"
+    - security_review: "Request security review"
+    - reject: "Reject and restart implementation"
+  outputs:
+    - final_approval_status
+    - improvement_requests
+    - additional_requirements
+
+# Phase 6: Task Completion and Documentation
+- name: "complete_task_implementation"
+  agent: "task-completion-coordinator"
+  action: "finalize_task_completion"
+  depends_on: ["review_implementation"]
+  condition: "{{ steps.review_implementation.outputs.final_approval_status == 'approve' }}"
+  inputs:
+    - feature_name: "{{ inputs.feature_name }}"
+    - task_number: "{{ inputs.task_number }}"
+    - implementation_outputs: "{{ steps }}"
+    - final_approval: "{{ steps.review_implementation.outputs }}"
+  context:
+    mcp_tools: ["continuity", "filesystem", "git"]
+  outputs:
+    - task_completion_status
+    - updated_task_metadata
+    - implementation_documentation
+    - lessons_learned
+    - next_task_recommendations
+
+# Phase 7: Integration Validation
+- name: "validate_integration"
+  agent: "integration-validator"
+  action: "validate_task_integration"
+  depends_on: ["complete_task_implementation"]
+  inputs:
+    - feature_name: "{{ inputs.feature_name }}"
+    - completed_task: "{{ inputs.task_number }}"
+    - implementation_details: "{{ steps.implement_task_code.outputs }}"
+  outputs:
+    - integration_status
+    - remaining_dependencies
+    - feature_completion_progress
+    - integration_issues
+    - next_steps_recommendation
+
+# Error Handling
+error_handling:
+  - condition: "dependency_not_satisfied"
+    action: "report_blocking_dependencies"
+    human_intervention: true
+    
+  - condition: "implementation_failure"
+    action: "analyze_failure_and_retry"
+    retry_limit: 2
+    
+  - condition: "test_failures"
+    action: "debug_and_fix_tests"
+    escalate_after: 1
+    
+  - condition: "quality_threshold_not_met"
+    action: "improve_code_quality"
+    human_review: true
+    
+  - condition: "security_issues_found"
+    action: "address_security_concerns"
+    priority: "high"
+
+# Success Criteria
+success_criteria:
+  - task_analysis_complete: true
+  - implementation_plan_approved: true
+  - code_implemented_successfully: true
+  - all_tests_passing: true
+  - quality_standards_met: true
+  - human_approval_obtained: true
+  - task_marked_complete: true
+
+# Output Artifacts
+outputs:
+  primary:
+    - name: "implemented_code"
+      path: "src/"
+      description: "Production-ready code for the implemented task"
+    
+    - name: "test_files"
+      path: "tests/"
+      description: "Comprehensive test suite for the implemented functionality"
+    
+    - name: "task_documentation"
+      path: "specs/{{ inputs.feature_name }}/"
+      files:
+        - task_{{ inputs.task_number }}_implementation.md
+        - task_{{ inputs.task_number }}_tests.md
+  
+  secondary:
+    - name: "implementation_log"
+      path: ".claude/logs/implementations/"
+      files:
+        - "{{ inputs.feature_name }}_task_{{ inputs.task_number }}.log"
+    
+    - name: "quality_reports"
+      path: ".claude/reports/quality/"
+      files:
+        - "{{ inputs.feature_name }}_task_{{ inputs.task_number }}_quality.md"
+    
+    - name: "updated_metadata"
+      path: "specs/{{ inputs.feature_name }}/"
+      files:
+        - metadata.json  # Updated with task completion status
+
+# Post-Implementation Actions
+post_completion:
+  - update_task_status: true
+  - commit_changes: true
+  - notify_team: true
+  - update_feature_progress: true
+  - recommend_next_tasks: true

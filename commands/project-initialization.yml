@@ -1,0 +1,359 @@
+# Project Initialization and Context Discovery Workflow
+
+name: "Project Initialization Workflow"
+description: "Comprehensive onboarding workflow to understand existing codebase and establish context before feature development"
+version: "1.0.0"
+
+# Workflow Configuration
+config:
+  timeout: 3600  # 60 minutes for comprehensive analysis
+  retry_attempts: 2
+  human_interaction: true
+  deep_analysis: true
+  context_preservation: true
+
+# Input Parameters
+inputs:
+  - name: "project_root"
+    type: "string"
+    required: true
+    description: "Path to the project root directory"
+  
+  - name: "project_name"
+    type: "string"
+    required: true
+    description: "Human-readable project name"
+  
+  - name: "analysis_depth"
+    type: "string"
+    required: false
+    default: "comprehensive"
+    enum: ["basic", "standard", "comprehensive", "deep"]
+  
+  - name: "focus_areas"
+    type: "array"
+    required: false
+    description: "Specific areas to focus analysis on"
+    default: ["architecture", "patterns", "dependencies", "security", "performance"]
+  
+  - name: "team_context"
+    type: "object"
+    required: false
+    description: "Team size, experience level, and preferences"
+
+# Workflow Steps
+
+# Phase 0: Pre-Analysis Setup
+- name: "setup_analysis_environment"
+  agent: "initialization-coordinator"
+  action: "prepare_analysis_environment"
+  inputs:
+    - project_root: "{{ inputs.project_root }}"
+    - project_name: "{{ inputs.project_name }}"
+    - analysis_depth: "{{ inputs.analysis_depth }}"
+  outputs:
+    - analysis_workspace
+    - discovery_context
+    - analysis_plan
+
+# Phase 1: Repository Structure Discovery
+- name: "discover_repository_structure"
+  agent: "codebase-archaeologist"
+  action: "analyze_repository_structure"
+  depends_on: ["setup_analysis_environment"]
+  inputs:
+    - project_root: "{{ inputs.project_root }}"
+    - analysis_plan: "{{ steps.setup_analysis_environment.outputs.analysis_plan }}"
+  context:
+    mcp_tools: ["filesystem", "git"]
+  outputs:
+    - directory_structure
+    - file_type_analysis
+    - repository_metrics
+    - git_history_summary
+  validation:
+    - structure_completeness: true
+    - file_categorization: true
+
+# Phase 2: Technology Stack Analysis
+- name: "analyze_technology_stack"
+  agent: "tech-stack-analyst"
+  action: "identify_technologies_and_patterns"
+  depends_on: ["discover_repository_structure"]
+  inputs:
+    - directory_structure: "{{ steps.discover_repository_structure.outputs.directory_structure }}"
+    - file_analysis: "{{ steps.discover_repository_structure.outputs.file_type_analysis }}"
+  outputs:
+    - technology_inventory
+    - framework_analysis
+    - dependency_mapping
+    - build_system_analysis
+    - deployment_configuration
+  validation:
+    - technology_identification: true
+    - version_compatibility_check: true
+
+# Phase 3: Architecture Pattern Discovery
+- name: "discover_architecture_patterns"
+  agent: "architecture-detective"
+  action: "analyze_architectural_patterns"
+  depends_on: ["analyze_technology_stack"]
+  inputs:
+    - directory_structure: "{{ steps.discover_repository_structure.outputs.directory_structure }}"
+    - technology_inventory: "{{ steps.analyze_technology_stack.outputs.technology_inventory }}"
+  outputs:
+    - architectural_patterns
+    - design_patterns_used
+    - component_relationships
+    - data_flow_analysis
+    - integration_points
+  validation:
+    - pattern_identification: true
+    - relationship_mapping: true
+
+# Phase 4: Code Quality and Convention Analysis
+- name: "analyze_code_quality_conventions"
+  agent: "code-quality-auditor"
+  action: "assess_code_quality_and_standards"
+  depends_on: ["discover_architecture_patterns"]
+  inputs:
+    - project_root: "{{ inputs.project_root }}"
+    - technology_inventory: "{{ steps.analyze_technology_stack.outputs.technology_inventory }}"
+  outputs:
+    - coding_standards_analysis
+    - naming_conventions
+    - code_quality_metrics
+    - testing_patterns
+    - documentation_analysis
+  validation:
+    - standards_consistency: true
+    - quality_assessment: true
+
+# Phase 5: Business Domain Understanding
+- name: "understand_business_domain"
+  agent: "domain-analyst"
+  action: "extract_business_context"
+  depends_on: ["analyze_code_quality_conventions"]
+  inputs:
+    - project_root: "{{ inputs.project_root }}"
+    - architectural_patterns: "{{ steps.discover_architecture_patterns.outputs.architectural_patterns }}"
+  outputs:
+    - business_domain_model
+    - user_personas_discovered
+    - feature_inventory
+    - business_rules_extracted
+    - user_workflow_analysis
+  validation:
+    - domain_completeness: true
+    - business_logic_mapping: true
+
+# Phase 6: Security and Performance Assessment
+- name: "assess_security_performance"
+  agent: "security-performance-analyst"
+  action: "analyze_security_and_performance_patterns"
+  depends_on: ["understand_business_domain"]
+  inputs:
+    - project_root: "{{ inputs.project_root }}"
+    - technology_inventory: "{{ steps.analyze_technology_stack.outputs.technology_inventory }}"
+    - architectural_patterns: "{{ steps.discover_architecture_patterns.outputs.architectural_patterns }}"
+  outputs:
+    - security_patterns_analysis
+    - performance_characteristics
+    - scalability_assessment
+    - monitoring_setup_analysis
+    - compliance_requirements
+  validation:
+    - security_assessment: true
+    - performance_baseline: true
+
+# Human Review Gate 1: Analysis Results Review
+- name: "review_analysis_results"
+  type: "human_review"
+  depends_on: ["assess_security_performance"]
+  message: |
+    Comprehensive codebase analysis completed for: {{ inputs.project_name }}
+    
+    📊 **Analysis Summary**:
+    - Repository Structure: {{ steps.discover_repository_structure.outputs.repository_metrics.total_files }} files across {{ steps.discover_repository_structure.outputs.repository_metrics.directory_count }} directories
+    - Technology Stack: {{ steps.analyze_technology_stack.outputs.technology_inventory.primary_languages | join(', ') }}
+    - Architecture: {{ steps.discover_architecture_patterns.outputs.architectural_patterns.primary_pattern }}
+    - Code Quality: {{ steps.analyze_code_quality_conventions.outputs.code_quality_metrics.overall_score }}/10
+    - Business Domain: {{ steps.understand_business_domain.outputs.feature_inventory.feature_count }} features identified
+    
+    Please review the detailed analysis results. Would you like to:
+  options:
+    - approve: "Approve analysis and proceed to steering file generation"
+    - refine: "Request deeper analysis in specific areas"
+    - manual_review: "Manually review specific findings before proceeding"
+    - restart: "Restart analysis with different parameters"
+  outputs:
+    - review_decision
+    - refinement_requests
+
+# Phase 7: Intelligent Steering File Generation
+- name: "generate_intelligent_steering_files"
+  agent: "steering-file-generator"
+  action: "create_context_aware_steering_files"
+  depends_on: ["review_analysis_results"]
+  condition: "{{ steps.review_analysis_results.outputs.review_decision == 'approve' }}"
+  inputs:
+    - all_analysis_outputs: "{{ steps }}"
+    - team_context: "{{ inputs.team_context }}"
+  outputs:
+    - generated_product_md
+    - generated_tech_md
+    - generated_structure_md
+    - generated_security_md
+    - custom_steering_recommendations
+  validation:
+    - steering_completeness: true
+    - context_accuracy: true
+
+# Phase 8: Development Environment Assessment
+- name: "assess_development_environment"
+  agent: "devenv-analyst"
+  action: "analyze_development_setup"
+  depends_on: ["generate_intelligent_steering_files"]
+  inputs:
+    - project_root: "{{ inputs.project_root }}"
+    - technology_inventory: "{{ steps.analyze_technology_stack.outputs.technology_inventory }}"
+  outputs:
+    - development_setup_analysis
+    - build_process_documentation
+    - testing_environment_analysis
+    - deployment_pipeline_analysis
+    - development_workflow_recommendations
+  validation:
+    - environment_completeness: true
+    - workflow_optimization: true
+
+# Phase 9: Knowledge Base Creation
+- name: "create_project_knowledge_base"
+  agent: "knowledge-synthesizer"
+  action: "synthesize_project_knowledge"
+  depends_on: ["assess_development_environment"]
+  inputs:
+    - all_analysis_results: "{{ steps }}"
+    - project_context: "{{ inputs }}"
+  context:
+    mcp_tools: ["continuity"]
+  outputs:
+    - project_knowledge_base
+    - context_relationships
+    - pattern_library
+    - decision_history
+    - learning_recommendations
+  validation:
+    - knowledge_completeness: true
+    - relationship_accuracy: true
+
+# Human Review Gate 2: Final Onboarding Review
+- name: "final_onboarding_review"
+  type: "human_approval"
+  depends_on: ["create_project_knowledge_base"]
+  message: |
+    🎉 **Project Onboarding Complete!**
+    
+    Your {{ inputs.project_name }} project has been thoroughly analyzed and documented.
+    
+    📋 **Generated Assets**:
+    - ✅ Intelligent steering files tailored to your codebase
+    - ✅ Comprehensive architecture documentation
+    - ✅ Development workflow recommendations
+    - ✅ Project knowledge base for future reference
+    
+    🔍 **Key Insights Discovered**:
+    - Primary Architecture: {{ steps.discover_architecture_patterns.outputs.architectural_patterns.primary_pattern }}
+    - Code Quality Score: {{ steps.analyze_code_quality_conventions.outputs.code_quality_metrics.overall_score }}/10
+    - Security Posture: {{ steps.assess_security_performance.outputs.security_patterns_analysis.overall_rating }}
+    - {{ steps.understand_business_domain.outputs.feature_inventory.feature_count }} existing features mapped
+    
+    🚀 **Next Steps**:
+    The system is now ready for spec-driven feature development with full understanding of your existing codebase.
+    
+    Ready to proceed?
+  options:
+    - proceed: "Begin spec-driven development with this context"
+    - export_analysis: "Export analysis results for team review"
+    - customize_steering: "Manually customize steering files"
+    - schedule_review: "Schedule periodic re-analysis"
+  outputs:
+    - final_approval
+    - next_steps
+
+# Phase 10: Finalization and Context Storage
+- name: "finalize_initialization"
+  agent: "initialization-coordinator"
+  action: "finalize_project_setup"
+  depends_on: ["final_onboarding_review"]
+  condition: "{{ steps.final_onboarding_review.outputs.final_approval == 'proceed' }}"
+  inputs:
+    - project_context: "{{ inputs }}"
+    - all_outputs: "{{ steps }}"
+  context:
+    mcp_tools: ["continuity", "filesystem", "git"]
+  outputs:
+    - initialization_complete
+    - context_stored
+    - steering_files_installed
+    - knowledge_base_indexed
+    - project_ready_status
+
+# Error Handling
+error_handling:
+  - condition: "analysis_timeout"
+    action: "save_partial_analysis"
+    retry_with: "reduced_scope"
+    
+  - condition: "insufficient_permissions"
+    action: "request_permissions"
+    escalate: true
+    
+  - condition: "large_repository"
+    action: "enable_sampling_mode"
+    notify_user: true
+    
+  - condition: "missing_dependencies"
+    action: "document_limitations"
+    continue_analysis: true
+
+# Success Criteria
+success_criteria:
+  - repository_structure_mapped: true
+  - technology_stack_identified: true
+  - architecture_patterns_discovered: true
+  - steering_files_generated: true
+  - knowledge_base_created: true
+  - human_approval_obtained: true
+
+# Output Artifacts
+outputs:
+  primary:
+    - name: "steering_files"
+      path: ".claude/steering/"
+      files:
+        - product.md
+        - tech.md
+        - structure.md
+        - security.md
+    
+    - name: "project_analysis"
+      path: ".claude/analysis/"
+      files:
+        - repository_analysis.md
+        - architecture_documentation.md
+        - technology_inventory.md
+        - code_quality_report.md
+        - security_assessment.md
+  
+  secondary:
+    - name: "knowledge_base"
+      path: ".claude/knowledge/"
+      description: "Comprehensive project understanding stored in MCP Continuity"
+      
+    - name: "development_guides"
+      path: ".claude/guides/"
+      files:
+        - development_setup.md
+        - contribution_guidelines.md
+        - architecture_decisions.md
