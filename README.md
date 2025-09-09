@@ -1,3 +1,5 @@
+Copy the repo into .claude folder in root of project, then relaunch claude code cli and confirm if slash commands and agents are loaded in CLI.
+
 # Spec-Driven Development System
 
 A comprehensive implementation of structured, AI-assisted software development that transforms high-level feature requests into production-ready code through intelligent codebase understanding and disciplined multi-phase workflows.
